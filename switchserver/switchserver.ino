@@ -22,8 +22,6 @@
 //Imports
 #include <RCSwitch.h>    // https://code.google.com/p/rc-switch/
 #include <UIPEthernet.h> // https://github.com/ntruchsess/arduino_uip
-#include <Base64.h>      // https://github.com/adamvr/arduino-base64
-//#include <ArduinoJson.h> //https://github.com/bblanchon/ArduinoJson
 
 //Funktionsdeklarationen
 String readRequest(EthernetClient* client);
@@ -48,6 +46,12 @@ void setup() {
 	IPAddress ip(192, 168, 115, 155);                  //IP Adresse
 	Ethernet.begin(mac, ip);
 	server.begin();	
+
+        //Sende LED initalisieren
+        if(SEND_LED != -1) {
+                                 
+                 pinMode(SEND_LED, OUTPUT); 
+        }
 }
 
 void loop() {
@@ -55,30 +59,125 @@ void loop() {
 	size_t size;
 	if (EthernetClient client = server.available()) {
 		
+                //Sende LED schalten
+                if(SEND_LED != -1) {
+                                 
+                        digitalWrite(SEND_LED, HIGH); 
+                }
+  
 		//Anfrage empfangen
 		String request = readRequest(&client);
-		int len = request.length();
-		char buffer[len];
-		request.toCharArray(buffer, len);
+                
+                //Debug Ausgabe
+                if(SERIAL_DEBUG) {
+                                  
+		        Serial.println("request " + request);
+	        }
+                
+                // Variablen Aufteilen
+                // Data is now available in pieces array
+                // pieces[0] is first item
+                // pieces[1] is second item, and so on
+                // You can call toInt() on the data to convert it to an int
+                // ex. int value = pieces[0].toInt();
+	        const int numberOfPieces = 6;
+	        String pieces[numberOfPieces];
+	        int counter = 0;
+	        int lastIndex = 0;
+	 
+	        for (int i = 0; i < request.length(); i++) {
 		
-		//Base64 decode
-		char out[len];
-		base64_decode(out, buffer, sizeof(buffer));
-                Serial.println(out);
+		        if (request.substring(i, i + 1) == ":") {
+			        pieces[counter] = request.substring(lastIndex, i);
+			        lastIndex = i + 1;
+			        counter++;
+		        }
+	        }
+                pieces[counter] = request.substring(lastIndex, request.length() + 1);
+
+                //Anfrage bearbeiten
+                int type = pieces[0].toInt();
+                if(type == 1) {
+                  
+                        //433MHz Befehl senden Typ 1
+                        //(Typ[0]:Hauscode[1]:Geraetecode[2]:Befehl[3]) + Leerzeichen am Ende
+                        int command = pieces[3].toInt();
+                        char homeCode[6];
+                        pieces[1].toCharArray(homeCode, 6);
+                        int deviceCode = pieces[2].toInt();
+                        if(command == 1) {
+                          
+                                //Einschaltbefehl senden
+                                rcSwitch.switchOn(homeCode, deviceCode);
+                        } else {
+                          
+                                //Asuschaltbefehl senden
+                                rcSwitch.switchOff(homeCode, deviceCode);
+                        }
+                        
+                        //Debug Ausgabe
+                        if(SERIAL_DEBUG) {
+                                  
+		                Serial.print("send ");
+                                Serial.print(homeCode);
+                                Serial.print(" ");
+                                Serial.print(deviceCode);
+                                Serial.print(" ");
+                                Serial.println(command);
+	                }
+                } else if(type == 2) {
+                  
+                        //GPIO Ausgang schalten Typ 2
+                        //(Typ[0]:Pin[1]:Befehl[2]) + Leerzeichen am Ende
+                        int pin = pieces[1].toInt();
+                        int command = pieces[2].toInt();
+                        
+                        pinMode(pin, OUTPUT);
+                        if(command == 1) {
+                              
+                                digitalWrite(pin, HIGH);
+                        } else {
+                                
+                                digitalWrite(pin, LOW);
+                        }
+                        
+                        //Debug Ausgabe
+                        if(SERIAL_DEBUG) {
+                                  
+		                Serial.print("write ");
+                                Serial.print(pin);
+                                Serial.print(" ");
+                                Serial.println(command);
+	                }
+                } else if(type == 3) {
+                  
+                        //GPIO Eingang schalten Typ 3
+                        //(Typ[0]:Pin[1]) + Leerzeichen am Ende
+                        int pin = pieces[1].toInt();
+                        
+                        pinMode(pin, INPUT);
+                        int state = digitalRead(pin);
+                        client.println(state);
+                        client.flush();
+                        
+                        //Debug Ausgabe
+                        if(SERIAL_DEBUG) {
+                                  
+		                Serial.print("read ");
+                                Serial.print(pin);
+                                Serial.print(" state ");
+                                Serial.println(state);
+	                }
+                }
 		
-		//JSON decode
-		//StaticJsonBuffer<200> jsonBuffer;
-		//JsonObject& root = jsonBuffer.parseObject(out);
-                //const char* type = root[0]["type"];
-		//Serial.println(type);
-		
-                //Empfangene Daten verarbeiten
-                //rcSwitch.switchOn("11111", 1);
-	        //delay(5000);
-	        //rcSwitch.switchOff("11111", 1);
-	        //delay(5000);
-		
+                //verbindung beenden
 		client.stop();
+
+                //Sende LED schalten
+                if(SEND_LED != -1) {
+                                 
+                        digitalWrite(SEND_LED, LOW); 
+                }
 	}
 }
 
