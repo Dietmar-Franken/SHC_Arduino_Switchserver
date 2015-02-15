@@ -2,9 +2,24 @@
  * Schaltserver für Arduino 
  * 
  * Benötigte Hardware:
- * - Arduino Uno, Mega, Pro Mini oder Nano (für Pro Mini wird zum flashen noch ein FTDI/USB Adapter benötigt)
+ * - Arduino Uno, Mega, Due, Pro Mini oder Nano (für Pro Mini wird zum flashen noch ein FTDI/USB Adapter benötigt)
  * - 433MHz Sender
  * - ENC28J60 Netzwerk Chip
+ *
+ * Anschluss:
+ * - 433MHz Sender
+ *   DATA -> Arduino Pin 3 
+ *   VCC -> 3 - 12V
+ *   GND -> 0V/GND
+ *
+ * - ENC28J60 (http://arduino.alhin.de/index.php?n=24)
+ *   VCC -> 3,3V oder 5V je nach Chip
+ *   GND -> 0V/GND
+ *   SO -> Arduino Pin 12 (beim Mega Pi 50)
+ *   SCK -> Arduino Pin 13 (beim Mega Pi 52)
+ *   RESET -> Reset
+ *   SI -> Arduino Pin 11 (beim Mega Pi 51)
+ *   CS -> Arduino Pin 10 (beim Mega Pi 53)
  *
  * @author Oliver Kleditzsch
  * @copyright Copyright (c) 2015, Oliver Kleditzsch
