@@ -120,14 +120,21 @@ void loop() {
                         char homeCode[6];
                         pieces[1].toCharArray(homeCode, 6);
                         int deviceCode = pieces[2].toInt();
+                        int continues = pieces[4].toInt();
                         if(command == 1) {
                           
                                 //Einschaltbefehl senden
-                                rcSwitch.switchOn(homeCode, deviceCode);
+                                for(int i = 0; i < continues; i++) {
+                                  
+                                  rcSwitch.switchOn(homeCode, deviceCode);
+                                }                                
                         } else {
                           
                                 //Asuschaltbefehl senden
-                                rcSwitch.switchOff(homeCode, deviceCode);
+                                for(int i = 0; i < continues; i++) {
+                                  
+                                  rcSwitch.switchOff(homeCode, deviceCode);
+                                }
                         }
                         
                         //Debug Ausgabe
@@ -138,7 +145,10 @@ void loop() {
                                 Serial.print(" ");
                                 Serial.print(deviceCode);
                                 Serial.print(" ");
-                                Serial.println(command);
+                                Serial.print(command);
+                                Serial.print(" -> ");
+                                Serial.print(continues);
+                                Serial.println("x gesendet");
 	                }
                 } else if(type == 2) {
                   
