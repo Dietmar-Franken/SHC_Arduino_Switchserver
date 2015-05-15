@@ -35,7 +35,7 @@
 #define SWITCHSERVER_PORT 9274  //Port des Schaltservers
  
 //Imports
-#include <RCSwitch.h>    // https://code.google.com/p/rc-switch/
+#include <RCSwitch.h>    // https://github.com/agent4788/rc-switch exportiert von https://code.google.com/p/rc-switch/
 #include <UIPEthernet.h> // https://github.com/ntruchsess/arduino_uip
 
 //Funktionsdeklarationen
