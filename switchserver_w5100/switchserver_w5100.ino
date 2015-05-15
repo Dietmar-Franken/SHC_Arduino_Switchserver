@@ -22,6 +22,7 @@
 //Konfiguration
 #define SERIAL_DEBUG 1          //ausgeführte Befehle auf die Serielle Schnittstelle ausgeben
 #define SEND_LED 2              //Pin für die Sende LED (-1 -> deaktiviert)
+#define STATE_LED -1            //Pin für die Status LED (-1 -> deaktiviert)
 #define RCSWITCH_SEND_PIN 3     //Pin an dem der DATA Eingang des Senders Angeschlossen ist
 #define SWITCHSERVER_PORT 9274  //Port des Schaltservers
  
@@ -37,6 +38,11 @@ String readRequest(EthernetClient* client);
 RCSwitch rcSwitch = RCSwitch();
 EthernetServer server = EthernetServer(SWITCHSERVER_PORT);
 EthernetClient client;
+
+//Status LED
+bool StateLedValue = false;
+unsigned long previousMillis = 0;
+unsigned long interval = 1000;
 
 void setup() {
 	
@@ -58,6 +64,12 @@ void setup() {
         if(SEND_LED != -1) {
                                  
                  pinMode(SEND_LED, OUTPUT); 
+        }
+        
+        //Status LED initalisieren
+        if(STATE_LED != -1) {
+                                 
+                 pinMode(STATE_LED, OUTPUT); 
         }
 }
 
@@ -196,6 +208,14 @@ void loop() {
                         digitalWrite(SEND_LED, LOW); 
                 }
 	}
+
+        //Status LED schalten
+        if(STATE_LED != -1 && (millis() - previousMillis > interval)) {
+                
+                previousMillis = millis();
+                stateLedValue = !stateLedValue;
+                digitalWrite(STATE_LED, stateLedValue);
+         }
 }
 
 String readRequest(EthernetClient* client) {
