@@ -131,6 +131,7 @@ void loop() {
                                 for(int i = 0; i < continues; i++) {
                                   
                                   rcSwitch.switchOn(homeCode, deviceCode);
+                                  delay(100);
                                 }                                
                         } else {
                           
@@ -138,6 +139,7 @@ void loop() {
                                 for(int i = 0; i < continues; i++) {
                                   
                                   rcSwitch.switchOff(homeCode, deviceCode);
+                                  delay(100);
                                 }
                         }
                         
